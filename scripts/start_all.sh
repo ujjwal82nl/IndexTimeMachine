@@ -6,13 +6,14 @@ umask 002
 PORT=9223
 CHROME_PROFILE_DIR="./ChromeProfile"
 SCRAPER_SCRIPT="tv_scraper.py"
+AUTO_PULL=true  # Set to false to disable automatic git pull on startup
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
 # Automatically pull the latest stable code from GitHub main branch
-if [ -d ".git" ]; then
+if [ "$AUTO_PULL" = true ] && [ -d ".git" ]; then
     echo "[INFO] Git repository detected. Checking for updates from main branch..."
     # Suppress output if successful, show error if failed
     git pull origin main || echo "[WARNING] Could not pull latest changes from Git remote. Running local files."
