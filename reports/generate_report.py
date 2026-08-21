@@ -364,6 +364,31 @@ def generate_dashboard(trades):
             color: var(--text-muted);
             font-size: 0.8rem;
         }
+        /* Quick date preset buttons */
+        .quick-date-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.4rem 0.85rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            transition: all 0.2s ease;
+        }
+        .quick-date-btn:hover {
+            background: rgba(99, 102, 241, 0.12);
+            border-color: rgba(99, 102, 241, 0.4);
+            color: #a5b4fc;
+        }
+        .quick-date-btn.active {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+            color: #a5b4fc;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
+        }
 
         /* Table ledger */
         .table-container {
@@ -518,7 +543,7 @@ def generate_dashboard(trades):
         }
 
         .tt-btn {
-            padding: 0.4rem 1.1rem;
+            padding: 0.4rem 0.85rem;
             border-radius: 50px;
             border: none;
             font-size: 0.85rem;
@@ -567,16 +592,16 @@ def generate_dashboard(trades):
 
     <header>
         <div class="brand">
-            <h1>Visual Strategy Report</h1>
-            <p>TradingView Interactive Execution Ledger & Performance Comparison</p>
+            <h1>Algo trading dashboard</h1>
+            <p>Interactive Trade Execution, Ledger & Performance Comparison</p>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.4rem;">
+                Last updated: <span style="color: var(--text-color); font-weight: 600;">__LAST_UPDATED__</span>
+            </div>
         </div>
         <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
             <div class="trade-type-toggle" id="tradeTypeToggle">
-                <button class="tt-btn active-paper" id="tt-PAPER" onclick="setTradeTypeFilter('PAPER')">📄 Paper</button>
-                <button class="tt-btn" id="tt-LIVE"  onclick="setTradeTypeFilter('LIVE')">⚡ Live</button>
-            </div>
-            <div style="font-size: 0.9rem; color: var(--text-muted);">
-                Last updated: <span style="color: var(--text-color); font-weight: 600;">__LAST_UPDATED__</span>
+                <button class="tt-btn active-paper" id="tt-PAPER" onclick="setTradeTypeFilter('PAPER')">📄</button>
+                <button class="tt-btn" id="tt-LIVE"  onclick="setTradeTypeFilter('LIVE')">⚡</button>
             </div>
         </div>
     </header>
@@ -588,9 +613,16 @@ def generate_dashboard(trades):
             <div class="sub">Dynamic premium tracking</div>
         </div>
         <div class="card-stat">
-            <div class="title">Total Executions</div>
-            <div class="value" id="stat-total-trades">__TOTAL_TRADES__ Trades</div>
-            <div class="sub" id="stat-win-loss">__WINNING_TRADES__ Win / __LOSING_TRADES__ Loss</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; height: 100%;">
+                <div>
+                    <div class="title">Total Executions</div>
+                    <div class="value" id="stat-total-trades">__TOTAL_TRADES__ Trades</div>
+                    <div class="sub" id="stat-win-loss">__WINNING_TRADES__ Win / __LOSING_TRADES__ Loss</div>
+                </div>
+                <div style="position: relative; height: 55px; width: 55px; flex-shrink: 0;">
+                    <canvas id="totalExecutionChart"></canvas>
+                </div>
+            </div>
         </div>
         <div class="card-stat">
             <div class="title">Strategy Win Rate</div>
@@ -624,6 +656,11 @@ def generate_dashboard(trades):
                     </div>
                     <div class="filters">
                         <span class="filter-label">Date:</span>
+                        <button class="quick-date-btn" id="qdf-today" onclick="setQuickDateFilter('today')">Today</button>
+                        <button class="quick-date-btn" id="qdf-week" onclick="setQuickDateFilter('week')">Last Week</button>
+                        <button class="quick-date-btn" id="qdf-month" onclick="setQuickDateFilter('month')">This Month</button>
+                        <button class="quick-date-btn" id="qdf-quarter" onclick="setQuickDateFilter('quarter')">This Quarter</button>
+                        <span class="date-sep" style="margin: 0 0.2rem;">|</span>
                         <input type="date" class="date-input" id="date-from" title="From date" onchange="applyDateFilter()">
                         <span class="date-sep">&rarr;</span>
                         <input type="date" class="date-input" id="date-to" title="To date" onchange="applyDateFilter()">
@@ -687,6 +724,7 @@ def generate_dashboard(trades):
         let currentTradeType      = 'PAPER';  // default to PAPER view
         let currentDateFrom       = null;     // 'YYYY-MM-DD' or null
         let currentDateTo         = null;     // 'YYYY-MM-DD' or null
+        let activeQuickFilter     = null;
 
         // ── Populate date inputs with earliest/latest trade dates on load ────
         (function initDateBounds() {
@@ -701,6 +739,12 @@ def generate_dashboard(trades):
         function applyDateFilter() {
             currentDateFrom = document.getElementById('date-from').value || null;
             currentDateTo   = document.getElementById('date-to').value   || null;
+            // Clear quick-filter highlight if user manually edits dates
+            ['today','week','month','quarter'].forEach(id => {
+                const btn = document.getElementById('qdf-' + id);
+                if (btn) btn.classList.remove('active');
+            });
+            activeQuickFilter = null;
             applyCombinedFilters();
             recomputeStats();
         }
@@ -710,6 +754,63 @@ def generate_dashboard(trades):
             document.getElementById('date-to').value   = '';
             currentDateFrom = null;
             currentDateTo   = null;
+            ['today','week','month','quarter'].forEach(id => {
+                const btn = document.getElementById('qdf-' + id);
+                if (btn) btn.classList.remove('active');
+            });
+            activeQuickFilter = null;
+            applyCombinedFilters();
+            recomputeStats();
+        }
+
+        function _toYMD(d) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function setQuickDateFilter(preset) {
+            const now = new Date();
+            let from, to;
+
+            if (preset === 'today') {
+                from = to = _toYMD(now);
+            } else if (preset === 'week') {
+                // Mon–Sun of the previous calendar week
+                const day = now.getDay(); // 0=Sun
+                const diffToLastMon = (day === 0 ? 6 : day - 1) + 7;
+                const mon = new Date(now);
+                mon.setDate(now.getDate() - diffToLastMon);
+                const sun = new Date(mon);
+                sun.setDate(mon.getDate() + 6);
+                from = _toYMD(mon);
+                to   = _toYMD(sun);
+            } else if (preset === 'month') {
+                // 1st to last day of current month
+                from = _toYMD(new Date(now.getFullYear(), now.getMonth(), 1));
+                to   = _toYMD(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+            } else if (preset === 'quarter') {
+                // Current calendar quarter
+                const q = Math.floor(now.getMonth() / 3);
+                from = _toYMD(new Date(now.getFullYear(), q * 3, 1));
+                to   = _toYMD(new Date(now.getFullYear(), q * 3 + 3, 0));
+            }
+
+            // Highlight active preset
+            ['today','week','month','quarter'].forEach(id => {
+                const btn = document.getElementById('qdf-' + id);
+                if (btn) btn.classList.toggle('active', id === preset);
+            });
+            activeQuickFilter = preset;
+
+            // Populate the date inputs
+            document.getElementById('date-from').value = from;
+            document.getElementById('date-to').value   = to;
+
+            // Apply
+            currentDateFrom = from;
+            currentDateTo   = to;
             applyCombinedFilters();
             recomputeStats();
         }
@@ -875,6 +976,14 @@ def generate_dashboard(trades):
                 pnlChartInstance.data.datasets[0].borderColor = chartPnLs.map(v => v >= 0 ? '#10b981' : '#ef4444');
                 pnlChartInstance.update();
             }
+
+
+
+            // ── Update Total Execution Chart (Win/Loss) ──────────────────────────
+            if (typeof totalExecutionChartInstance !== 'undefined') {
+                totalExecutionChartInstance.data.datasets[0].data = [winning, losing];
+                totalExecutionChartInstance.update();
+            }
         }
 
         function setIndexFilter(idxFilter) {
@@ -1031,6 +1140,31 @@ def generate_dashboard(trades):
                         ticks: { color: '#9ca3af' }
                     }
                 }
+            }
+        });
+
+
+
+        // Initialize Total Execution Chart (Win/Loss)
+        const totExecCtx = document.getElementById('totalExecutionChart').getContext('2d');
+        const totalExecutionChartInstance = new Chart(totExecCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Win', 'Loss'],
+                datasets: [{
+                    data: [__WINNING_TRADES__, __LOSING_TRADES__],
+                    backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(239, 68, 68, 0.6)'],
+                    borderColor: ['#10b981', '#ef4444'],
+                    borderWidth: 1.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                cutout: '70%'
             }
         });
     </script>
