@@ -281,21 +281,8 @@ def main():
                     safe_print(f"  • Target:       {state.get('TargetPrice') or '--'}")
                     safe_print(f"  • Expiry Target:{target_expiry.strftime('%d-%b-%Y') if target_expiry else '--'}")
                     
-                    # Send Telegram notification
-                    msg = (
-                        f"🔔 <b>[NEW SIGNAL LOADED]</b>\n"
-                        f"• <b>Underlying:</b> {UNDERLYING}\n"
-                        f"• <b>Operator:</b> {state.get('Operator')}\n"
-                        f"• <b>Morning:</b> {state.get('Bar2Time')}\n"
-                        f"• <b>Afternoon:</b> {state.get('Bar3Time')}\n"
-                        f"• <b>Expiry Target:</b> {target_expiry.strftime('%d-%b-%Y') if target_expiry else '--'}\n"
-                        f"• <b>Timestamp:</b> {state.get('LastSignalTime')}"
-                    )
-                    try:
-                        from utils import send_telegram_notification
-                        send_telegram_notification(msg)
-                    except Exception as telegram_err:
-                        safe_print(f"[WARNING] Telegram notification failed: {telegram_err}")
+                    # Telegram notification for loaded visual signals is disabled.
+                    pass
                     
                 bar2_time_str = state.get("Bar2Time")
                 bar3_time_str = state.get("Bar3Time")
@@ -509,24 +496,8 @@ def main():
                     ind_signal_detected = check_indicator_signal(scrape_file, ind_state, target_expiry)
                     if ind_signal_detected:
                         save_trade_state(ind_state_file, ind_state)
-                        try:
-                            from utils import send_telegram_notification
-                            ind_entry = ind_state.get('SignalEntry') or '--'
-                            ind_sl = ind_state.get('SignalSL') or '--'
-                            ind_tgts = ind_state.get('Targets') or []
-                            tgt_str = " | ".join(f"T{i+1}={v:.2f}" for i, v in enumerate(ind_tgts)) if ind_tgts else '--'
-                            ind_msg = (
-                                f"\U0001f4cc <b>[INDICATOR] New Signal</b>\n"
-                                f"\u2022 <b>Underlying:</b> {UNDERLYING}\n"
-                                f"\u2022 <b>Operator:</b> {ind_state.get('Operator')}\n"
-                                f"\u2022 <b>ENTRY:</b> {ind_entry}\n"
-                                f"\u2022 <b>SL:</b> {ind_sl}\n"
-                                f"\u2022 <b>Targets:</b> {tgt_str}\n"
-                                f"\u2022 <b>Timestamp:</b> {ind_state.get('LastSignalTime')}"
-                            )
-                            send_telegram_notification(ind_msg)
-                        except Exception as tg_err:
-                            safe_print(f"[WARNING] Telegram notification failed: {tg_err}")
+                        # Telegram notification for loaded indicator signals is disabled.
+                        pass
 
                     if ind_state.get("Position") == "NONE":
                         # Check entry condition
