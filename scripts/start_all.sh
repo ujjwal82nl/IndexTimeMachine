@@ -11,6 +11,13 @@ SCRAPER_SCRIPT="tv_scraper.py"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
+# Automatically pull the latest stable code from GitHub main branch
+if [ -d ".git" ]; then
+    echo "[INFO] Git repository detected. Checking for updates from main branch..."
+    # Suppress output if successful, show error if failed
+    git pull origin main || echo "[WARNING] Could not pull latest changes from Git remote. Running local files."
+fi
+
 echo "=================================================="
 echo " Starting TradingView Scraper Environment (Linux)"
 echo "=================================================="
