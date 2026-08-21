@@ -1,0 +1,33 @@
+# Credentials and local configuration
+.env
+.dhan_token.json
+.dhan_token.lock
+
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+venv*/
+.venv*/
+
+# Large data files
+api-scrip-master.csv
+
+# Browser debug profile state
+ChromeProfile/
+chrome_err.log
+
+# Lock files, backups, scraper data, and trade records
+lock/
+logs/
+backups/
+data/
+trades/
+*.log
+*.txt
+*.bak
+
+# Reports folder generated files
+reports/*.html
+reports/trade_ledger.json
+debug_cells.json
