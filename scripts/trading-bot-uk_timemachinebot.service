@@ -1,0 +1,16 @@
+[Unit]
+Description=IndexTimeMachine Telegram Bot — uk_timemachinebot
+After=network.target
+
+[Service]
+Type=simple
+User=ujjwal
+WorkingDirectory=/home/ujjwal/src/IndexTimeMachine
+ExecStart=/home/ujjwal/src/IndexTimeMachine/.venv/bin/python3 /home/ujjwal/src/IndexTimeMachine/scripts/telegram_bot.py uk_timemachinebot
+Restart=always
+RestartSec=10s
+StandardOutput=append:/home/ujjwal/src/IndexTimeMachine/logs/bot_uk_timemachinebot.log
+StandardError=append:/home/ujjwal/src/IndexTimeMachine/logs/bot_uk_timemachinebot_error.log
+
+[Install]
+WantedBy=multi-user.target

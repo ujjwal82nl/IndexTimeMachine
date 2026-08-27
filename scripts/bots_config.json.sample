@@ -1,0 +1,18 @@
+{
+  "bots": {
+    "uk_timemachinebot": {
+      "description": "IndexTimeMachine trading system control bot",
+      "bot_token": "YOUR_BOT_TOKEN_HERE",
+      "chat_id": "YOUR_CHAT_ID_HERE",
+      "enabled": true,
+      "role": "timemachine"
+    },
+    "uk_dhanalgobot": {
+      "description": "Generic Dhan algo trading utility bot",
+      "bot_token": "YOUR_BOT_TOKEN_HERE",
+      "chat_id": "YOUR_CHAT_ID_HERE",
+      "enabled": false,
+      "role": "dhan_algo"
+    }
+  }
+}
