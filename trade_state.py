@@ -41,6 +41,12 @@ def load_and_verify_active_state(dhan, underlying, state_file):
     recovered_state = load_trade_state(state_file, underlying)
     
     if recovered_state:
+        # Check if the recovered state is from a previous calendar day
+        today_str = datetime.now(IST).strftime("%Y-%m-%d")
+        if recovered_state.get("Date") != today_str:
+            safe_print(f"[WARNING] Recovered state date ({recovered_state.get('Date')}) is from a previous day. Resetting state to clean defaults.")
+            return get_default_state(underlying)
+
         safe_print("\n" + "="*50)
         safe_print("            RECOVERED STATE DETECTED")
         safe_print("="*50)
