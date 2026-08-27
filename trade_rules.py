@@ -268,7 +268,15 @@ def check_and_update_trailing_sl(state, dhan, index_sec_id, position):
                     # This is used to apply a buffer so a tiny retracement does not
                     # stop out the position right after a target is hit.
                     from sizing import TM_TRAIL_BUFFER_RATIO
-                    original_risk = abs(entry_idx_price - float(targets[0]))
+                    planned_entry = None
+                    if state.get("Strategy") == "INDICATOR":
+                        planned_entry = state.get("SignalEntry")
+                    else:
+                        planned_entry = state.get("TriggerCandleHigh") if position == "LONG" else state.get("TriggerCandleLow")
+                    
+                    if planned_entry is None:
+                        planned_entry = entry_idx_price
+                    original_risk = abs(planned_entry - float(targets[0]))
                     buffer = original_risk * TM_TRAIL_BUFFER_RATIO
 
                     # Determine the base SL level (entry or previous target)

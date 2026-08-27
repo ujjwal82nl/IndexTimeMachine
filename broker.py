@@ -593,8 +593,14 @@ def authenticate_and_get_dhan_client(client_code, totp_secret, pin, force_refres
                     safe_print(f"[WARNING] Authentication attempt {attempt+1} failed: {e}")
                 
                 if attempt < 2:
-                    safe_print("Sleeping 10 seconds before retrying authentication...")
-                    time.sleep(10)
+                    # Calculate sleep time to roll over to a new 30-second TOTP window
+                    time_elapsed = int(time.time()) % 30
+                    sleep_time = (30 - time_elapsed) + 1
+                    # Ensure a minimum sleep of 10 seconds to avoid spamming the API too rapidly
+                    if sleep_time < 10:
+                        sleep_time += 30
+                    safe_print(f"Sleeping {sleep_time} seconds to roll over to a new TOTP time-step...")
+                    time.sleep(sleep_time)
                     
         if not access_token:
             safe_print("[ERROR] Access token could not be fetched after 3 attempts. Check your credentials.")

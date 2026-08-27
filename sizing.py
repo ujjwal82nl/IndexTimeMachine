@@ -5,7 +5,7 @@ from utils import safe_print, get_index_metadata, UTILS_DIR, TRADES_DIR
 # ==========================================================
 # RISK AND CAPITAL ALLOCATION CONFIGURATIONS
 # ==========================================================
-MAX_MARGIN_PER_INDEX = 100000.0  # Max margin budget allowed to be allocated per index trade
+MAX_MARGIN_PER_INDEX = 50000.0  # Max margin budget allowed to be allocated per index trade
 MAX_LOSS_PER_TRADE = 5000.0      # Max capital risk/loss allowed per trade
 
 # ----------------------------------------------------------
@@ -26,11 +26,11 @@ MAX_LOSS_BREACH_THRESHOLD = 2
 # ----------------------------------------------------------
 
 def get_max_loss_per_trade():
-    """Gets dynamic max loss per trade: Rs. 2,000 for live trading, or 5% of MAX_MARGIN_PER_INDEX for normal execution."""
+    """Gets dynamic max loss per trade: Rs. 2,000 for live trading, or 10% of MAX_MARGIN_PER_INDEX for normal execution."""
     from utils import is_paper_trading
     if not is_paper_trading():
         return 2000.0
-    return MAX_MARGIN_PER_INDEX * 0.05
+    return MAX_MARGIN_PER_INDEX * 0.10
 # ==========================================================
 
 def get_active_positions_cost():
