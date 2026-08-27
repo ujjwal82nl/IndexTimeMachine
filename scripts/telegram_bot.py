@@ -261,7 +261,7 @@ def cmd_check():
 def cmd_start():
     send("🚀 <b>Starting trading system…</b>\n"
          "Killing any stale processes first, then launching fresh instances.")
-    _run_script("start_all.sh", "Start")
+    _run_script("scripts/start_all.sh", "Start")
     time.sleep(8)
     # Auto health-check after start
     cmd_check()
@@ -269,7 +269,7 @@ def cmd_start():
 
 def cmd_stop():
     send("🛑 <b>Stopping trading system…</b>\nExecuting clean shutdown.")
-    _run_script("stop_all.sh", "Stop")
+    _run_script("scripts/stop_all.sh", "Stop")
 
 
 def cmd_help():
