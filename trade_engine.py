@@ -75,7 +75,8 @@ def execute_entry_trade(dhan, underlying, state, option_type, index_price, clien
     extra_details = {
         "Operator": state.get("Operator"),
         "StopLossPrice": state.get("StopLossPrice") or state.get("SignalSL"),
-        "TargetPrice": state.get("TargetPrice") or (state.get("Targets")[-1] if state.get("Targets") else None)
+        "TargetPrice": state.get("TargetPrice") or (state.get("Targets")[-1] if state.get("Targets") else None),
+        "Targets": state.get("Targets")
     }
     if "MorningHigh" in state:
         extra_details.update({
@@ -90,8 +91,7 @@ def execute_entry_trade(dhan, underlying, state, option_type, index_price, clien
     else:
         extra_details.update({
             "SignalEntry": state.get("SignalEntry"),
-            "SignalSL": state.get("SignalSL"),
-            "Targets": state.get("Targets")
+            "SignalSL": state.get("SignalSL")
         })
 
     success, sym, sec_id = execute_dhan_order(

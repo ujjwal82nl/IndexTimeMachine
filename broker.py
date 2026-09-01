@@ -262,7 +262,11 @@ def get_intraday_candles(dhan, security_id, segment, instrument, from_date, to_d
     return None
 
 def get_5min_candle_range(dhan, security_id, candle_time_str):
-    """Fetches high/low of the specific 5-min candle from Dhan 1-minute historical data."""
+    """
+    Fetches high/low for Time Machine range setting.
+    High = High of the specific 5-min time candle.
+    Low  = Min(low of time candle, min low of previous 12 5-min candles [60 mins lookback]).
+    """
     match = re.search(r'\b(\d{2}):(\d{2})\b', candle_time_str)
     if not match:
         return None, None
@@ -284,23 +288,46 @@ def get_5min_candle_range(dhan, security_id, candle_time_str):
     df = get_intraday_candles(dhan, security_id, "IDX_I", "INDEX", query_date, query_date)
     if df is not None and not df.empty:
         try:
-            start_t = datetime.strptime(f"{target_hour:02d}:{target_minute:02d}", "%H:%M").time()
+            time_candle_start = datetime.strptime(f"{target_hour:02d}:{target_minute:02d}", "%H:%M")
             end_min = target_minute + 5
             end_hour = target_hour
             if end_min >= 60:
                 end_min -= 60
                 end_hour += 1
-            end_t = datetime.strptime(f"{end_hour:02d}:{end_min:02d}", "%H:%M").time()
+            time_candle_end = datetime.strptime(f"{end_hour:02d}:{end_min:02d}", "%H:%M")
             
-            df_filtered = df[
+            start_t = time_candle_start.time()
+            end_t = time_candle_end.time()
+            
+            # Filter 1-min candles for the specific 5-min time candle
+            df_time_candle = df[
                 (df['time'].dt.time >= start_t) &
                 (df['time'].dt.time < end_t)
             ]
             
-            if not df_filtered.empty:
-                return float(df_filtered['high'].max()), float(df_filtered['low'].min())
+            if not df_time_candle.empty:
+                high_val = float(df_time_candle['high'].max())
+                time_candle_low = float(df_time_candle['low'].min())
+                
+                # Previous 12 5-min candles = 60 minutes lookback window prior to start_t
+                lookback_start = (time_candle_start - timedelta(minutes=60)).time()
+                market_open_t = datetime.strptime("09:15", "%H:%M").time()
+                if lookback_start < market_open_t:
+                    lookback_start = market_open_t
+                    
+                df_lookback = df[
+                    (df['time'].dt.time >= lookback_start) &
+                    (df['time'].dt.time < end_t)
+                ]
+                
+                if not df_lookback.empty:
+                    low_val = float(df_lookback['low'].min())
+                else:
+                    low_val = time_candle_low
+                    
+                return high_val, min(time_candle_low, low_val)
         except Exception as e:
-            safe_print(f"Error resampling 5m candle: {e}")
+            safe_print(f"Error calculating 5m candle range with 12-candle lookback: {e}")
             
     return None, None
 
