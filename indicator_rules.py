@@ -127,6 +127,20 @@ def check_indicator_signal(scrape_file, ind_state, target_expiry):
             ind_state["SignalSL"] = None
             return False
 
+        # Validate directional sanity between ENTRY and SL
+        if operator == "Buy on Dip" and sl_price >= entry_price:
+            safe_print(
+                f"[INDICATOR] Invalid signal (ts={signal_timestamp}): 'Buy on Dip' requires SL ({sl_price}) < ENTRY ({entry_price}). Skipping."
+            )
+            ind_state["LastSignalTime"] = signal_timestamp
+            return False
+        elif operator == "Sell on Rise" and sl_price <= entry_price:
+            safe_print(
+                f"[INDICATOR] Invalid signal (ts={signal_timestamp}): 'Sell on Rise' requires SL ({sl_price}) > ENTRY ({entry_price}). Skipping."
+            )
+            ind_state["LastSignalTime"] = signal_timestamp
+            return False
+
         # Calculate 5 target levels using the same formula as TIME MACHINE
         from trade_rules import calculate_trade_levels
         _sl_calc, targets = calculate_trade_levels(operator, entry_price, sl_price)

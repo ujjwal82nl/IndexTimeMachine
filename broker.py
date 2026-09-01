@@ -54,7 +54,7 @@ def get_dhan_security_id(trading_symbol):
     fallback = {
         "Nifty 50": 13,
         "Nifty Bank": 25,
-        "S&P BSE Sensex": 1,
+        "S&P BSE Sensex": 51,
         "Fin Nifty": 27
     }
     return fallback.get(trading_symbol, None)
